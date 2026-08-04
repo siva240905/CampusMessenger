@@ -14,8 +14,24 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const hostname = window.location.hostname || '127.0.0.1';
-    const wsUrl = `ws://${hostname}:8000/ws?role=faculty_dashboard`;
+    let wsBaseUrl;
+    const apiBase = import.meta.env.VITE_API_BASE_URL;
+    if (apiBase) {
+      try {
+        const urlObj = new URL(apiBase.startsWith('http') ? apiBase : `http://${apiBase}`);
+        const protocol = urlObj.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsBaseUrl = `${protocol}//${urlObj.host}/ws`;
+      } catch (e) {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsBaseUrl = `${protocol}//${window.location.hostname}:8000/ws`;
+      }
+    } else {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const hostname = window.location.hostname || '127.0.0.1';
+      const port = (window.location.port === '3000' || window.location.port === '5173') ? ':8000' : (window.location.port ? `:${window.location.port}` : '');
+      wsBaseUrl = `${protocol}//${hostname}${port}/ws`;
+    }
+    const wsUrl = `${wsBaseUrl}?role=faculty_dashboard`;
 
     const connectWS = () => {
       const ws = new WebSocket(wsUrl);
