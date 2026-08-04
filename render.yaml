@@ -1,0 +1,25 @@
+services:
+  # Backend API & WebSocket Gateway Service
+  - type: web
+    name: campuslink-backend
+    env: python
+    region: singapore
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_API_KEY
+        generateValue: true
+
+  # Faculty Dashboard Static Web App
+  - type: web
+    name: campuslink-frontend
+    env: static
+    buildCommand: "cd frontend && npm install && npm run build"
+    staticPublishPath: "./frontend/dist"
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://campuslink-backend.onrender.com

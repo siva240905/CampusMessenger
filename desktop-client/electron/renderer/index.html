@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CampusLink Student Client</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div className="container">
+    <header className="header">
+      <h2>📡 CampusLink Client</h2>
+      <div id="status-badge" className="badge offline">Offline</div>
+    </header>
+
+    <section className="server-box">
+      <label>Server IP:</label>
+      <div className="input-group">
+        <input type="text" id="server-ip" value="127.0.0.1">
+        <button id="btn-connect">Connect</button>
+      </div>
+    </section>
+
+    <section className="feed-box">
+      <h3>Live Announcement Stream</h3>
+      <div id="message-list" className="message-list">
+        <div className="placeholder">Awaiting announcements from faculty...</div>
+      </div>
+    </section>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

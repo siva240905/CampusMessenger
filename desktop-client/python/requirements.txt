@@ -1,0 +1,4 @@
+websocket-client>=1.6.1
+requests>=2.31.0
+pillow>=9.5.0
+pystray>=0.19.4
