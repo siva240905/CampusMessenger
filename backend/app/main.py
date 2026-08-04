@@ -11,8 +11,30 @@ from app import models
 from app.websocket_manager import manager
 from app.routers import auth, broadcast, upload, clients, messages, analytics
 
-# Create database tables
+# Create database tables & auto-seed initial users if missing
 Base.metadata.create_all(bind=engine)
+
+def auto_seed_default_users():
+    db = SessionLocal()
+    try:
+        faculty = db.query(models.User).filter(models.User.username == "faculty").first()
+        if not faculty:
+            from app import auth as auth_utils
+            faculty = models.User(
+                username="faculty",
+                password_hash=auth_utils.get_password_hash("faculty123"),
+                full_name="Placement Officer",
+                role="faculty",
+                is_active=True
+            )
+            db.add(faculty)
+            db.commit()
+    except Exception as e:
+        print(f"Auto-seed warning: {e}")
+    finally:
+        db.close()
+
+auto_seed_default_users()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
