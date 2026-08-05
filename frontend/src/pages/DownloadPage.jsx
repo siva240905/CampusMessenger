@@ -120,7 +120,7 @@ export default function DownloadPage() {
                 <Download className="w-4 h-4" />
                 <span>Download Chrome Extension</span>
               </a>
-              <p className="text-[10px] text-slate-500 text-center">Open <code className="text-indigo-300">chrome://extensions</code> -> Developer mode -> Load unpacked</p>
+              <p className="text-[10px] text-slate-500 text-center">Open <code className="text-indigo-300">chrome://extensions</code> &rarr; Developer mode &rarr; Load unpacked</p>
             </div>
           </div>
 
