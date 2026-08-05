@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CampusLink Extension</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { width: 360px; height: 500px; background-color: #0f172a; color: #f8fafc; display: flex; flex-direction: column; overflow: hidden; }
+    header { background: rgba(30, 41, 59, 0.9); padding: 14px 16px; border-bottom: 1px solid #334155; display: flex; items-center: center; justify-content: space-between; }
+    .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+    .badge { font-size: 10px; padding: 2px 8px; border-radius: 999px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+    .badge-online { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-offline { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+    main { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px; font-size: 12px; }
+    .card.emergency { background: rgba(136, 19, 55, 0.4); border-color: #f43f5e; }
+    .card-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; color: #fff; }
+    .card-msg { color: #cbd5e1; line-height: 1.4; margin-bottom: 8px; }
+    .card-actions { display: flex; gap: 6px; }
+    .btn { background: #6366f1; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 11px; cursor: pointer; text-decoration: none; display: inline-block; text-align: center; }
+    .btn:hover { background: #4f46e5; }
+    .btn-secondary { background: #334155; color: #e2e8f0; }
+    .empty { text-align: center; padding: 40px 20px; color: #64748b; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <span>📡</span> CampusLink Extension
+    </div>
+    <div id="statusBadge" class="badge badge-offline">Connecting...</div>
+  </header>
+
+  <main id="feed">
+    <div class="empty">
+      📡 Waiting for announcements...
+    </div>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>

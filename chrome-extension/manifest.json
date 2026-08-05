@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "CampusLink - Student Instant Notifier",
+  "version": "1.0.0",
+  "description": "Instant LAN & Cloud announcement notifier for students. Sub-second emergency alerts and placement notices.",
+  "permissions": [
+    "notifications",
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*",
+    "wss://*/*",
+    "ws://*/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "CampusLink Notifier"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

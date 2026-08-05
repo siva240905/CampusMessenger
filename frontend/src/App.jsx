@@ -10,6 +10,7 @@ import Clients from './pages/Clients';
 import Analytics from './pages/Analytics';
 
 import StudentApp from './pages/StudentApp';
+import DownloadPage from './pages/DownloadPage';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -21,7 +22,8 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/student" element={<StudentApp />} />
-      <Route path="/install" element={<StudentApp />} />
+      <Route path="/download" element={<DownloadPage />} />
+      <Route path="/install" element={<DownloadPage />} />
       <Route
         path="/"
         element={
