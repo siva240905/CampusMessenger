@@ -1,11 +1,38 @@
 document.addEventListener("DOMContentLoaded", () => {
   const statusBadge = document.getElementById("statusBadge");
   const feed = document.getElementById("feed");
+  const toggleSettings = document.getElementById("toggleSettings");
+  const settingsPanel = document.getElementById("settingsPanel");
+  const urlInput = document.getElementById("urlInput");
+  const saveUrlBtn = document.getElementById("saveUrlBtn");
+
+  // Load current URL into settings input
+  chrome.storage.local.get(["custom_ws_url"], (data) => {
+    urlInput.value = data.custom_ws_url || "https://campuslink-backend.onrender.com";
+  });
+
+  toggleSettings.addEventListener("click", () => {
+    settingsPanel.classList.toggle("open");
+  });
+
+  saveUrlBtn.addEventListener("click", () => {
+    const val = urlInput.value.trim();
+    if (!val) return;
+    chrome.storage.local.set({ custom_ws_url: val }, () => {
+      saveUrlBtn.textContent = "Connecting...";
+      chrome.runtime.sendMessage({ action: "reconnect" }, () => {
+        setTimeout(() => {
+          saveUrlBtn.textContent = "Save & Connect Server";
+          settingsPanel.classList.remove("open");
+          updateUI();
+        }, 1000);
+      });
+    });
+  });
 
   // Render status and messages
   function updateUI() {
     chrome.storage.local.get(["is_connected", "messages"], (data) => {
-      // Update badge
       if (data.is_connected) {
         statusBadge.textContent = "● Live";
         statusBadge.className = "badge badge-online";
@@ -14,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
         statusBadge.className = "badge badge-offline";
       }
 
-      // Render messages
       const msgs = data.messages || [];
       if (msgs.length === 0) {
         feed.innerHTML = `<div class="empty">📡 Waiting for announcements...</div>`;
@@ -32,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       `).join('');
 
-      // Copy event listeners
       document.querySelectorAll(".copy-btn").forEach((btn) => {
         btn.addEventListener("click", (e) => {
           const text = e.target.getAttribute("data-text");
@@ -50,5 +75,5 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   updateUI();
-  setInterval(updateUI, 2000);
+  setInterval(updateUI, 1500);
 });
