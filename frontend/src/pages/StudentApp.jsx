@@ -123,13 +123,26 @@ export default function StudentApp() {
 
   // Establish WebSocket Connection
   useEffect(() => {
-    let wsUrl = `ws://${window.location.hostname}:8000/ws`;
-    if (window.location.protocol === 'https:') {
-      wsUrl = `wss://${window.location.hostname}/ws`;
+    let wsBaseUrl;
+    const apiBase = import.meta.env.VITE_API_BASE_URL;
+    if (apiBase) {
+      try {
+        const urlObj = new URL(apiBase.startsWith('http') ? apiBase : `https://${apiBase}`);
+        const protocol = urlObj.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsBaseUrl = `${protocol}//${urlObj.host}/ws`;
+      } catch (e) {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsBaseUrl = `${protocol}//${window.location.hostname}:8000/ws`;
+      }
+    } else {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const hostname = window.location.hostname || '127.0.0.1';
+      const port = (window.location.port === '3000' || window.location.port === '5173') ? ':8000' : (window.location.port ? `:${window.location.port}` : '');
+      wsBaseUrl = `${protocol}//${hostname}${port}/ws`;
     }
 
     const clientId = `chrome_pwa_${Math.random().toString(36).substring(7)}`;
-    const fullWsUrl = `${wsUrl}?client_id=${clientId}&computer_name=ChromeDesktop&ip_address=127.0.0.1&os_info=${encodeURIComponent(navigator.userAgent)}&client_version=1.0.0`;
+    const fullWsUrl = `${wsBaseUrl}?client_id=${clientId}&computer_name=ChromeDesktop&ip_address=127.0.0.1&os_info=${encodeURIComponent(navigator.userAgent)}&client_version=1.0.0`;
 
     function connect() {
       const socket = new WebSocket(fullWsUrl);
@@ -378,7 +391,7 @@ export default function StudentApp() {
 
                   {msg.file && (
                     <a
-                      href={`http://${window.location.hostname}:8000${msg.file}`}
+                      href={import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}${msg.file}` : `http://${window.location.hostname}:8000${msg.file}`}
                       download={msg.file_name || 'download'}
                       className="inline-flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition"
                     >
