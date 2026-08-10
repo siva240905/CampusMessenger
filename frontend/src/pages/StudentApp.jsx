@@ -81,6 +81,16 @@ const resolveUrl = (path) => {
   return `${base}${cleanPath}`;
 };
 
+const triggerDownload = (url, defaultName = 'download') => {
+  if (!url) return;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = defaultName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
+
 export default function StudentApp() {
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem('campuslink_student_messages');
@@ -440,15 +450,26 @@ export default function StudentApp() {
                   {msg.image && (() => {
                     const mediaUrl = resolveUrl(msg.image);
                     const isVideo = msg.image.startsWith('data:video') || /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(msg.image);
+                    const ext = isVideo ? '.mp4' : '.png';
+                    const fileName = `campus_media_${msg.id}${ext}`;
                     return (
-                      <a
-                        href={mediaUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center space-x-1.5 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition"
-                      >
-                        <span>{isVideo ? '🎬 View Video' : '🖼️ View Photo'}</span>
-                      </a>
+                      <>
+                        <a
+                          href={mediaUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center space-x-1.5 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition"
+                        >
+                          <span>{isVideo ? '🎬 View Video' : '🖼️ View Photo'}</span>
+                        </a>
+                        <button
+                          onClick={() => triggerDownload(mediaUrl, fileName)}
+                          className="inline-flex items-center space-x-1.5 bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-md shadow-teal-900/30"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>{isVideo ? '📥 Download Video' : '📥 Download Photo'}</span>
+                        </button>
+                      </>
                     );
                   })()}
 
@@ -546,11 +567,37 @@ export default function StudentApp() {
                   </button>
                 </>
               )}
+              {activeToast.image && (() => {
+                const mediaUrl = resolveUrl(activeToast.image);
+                const isVideo = activeToast.image.startsWith('data:video') || /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(activeToast.image);
+                const ext = isVideo ? '.mp4' : '.png';
+                return (
+                  <button
+                    onClick={() => triggerDownload(mediaUrl, `campus_media_${activeToast.id}${ext}`)}
+                    className="bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>{isVideo ? '📥 Download Video' : '📥 Download Photo'}</span>
+                  </button>
+                );
+              })()}
+
+              {activeToast.file && (
+                <a
+                  href={resolveUrl(activeToast.file)}
+                  download={activeToast.file_name || 'document'}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3 py-2 rounded-xl flex items-center gap-1"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>📥 Download Doc</span>
+                </a>
+              )}
+
               <button
                 onClick={() => copyText(`${activeToast.title}\n${activeToast.message}`, `toast_msg`)}
                 className="bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs px-3 py-2 rounded-xl"
               >
-                {copiedId === 'toast_msg' ? '✓ Copied' : '📝 Copy Text'}
+                {copiedId === `toast_msg` ? '✓ Copied' : '📝 Copy Text'}
               </button>
             </div>
           </div>
