@@ -19,8 +19,27 @@ class CampusLinkClient:
     def __init__(self, server_host="127.0.0.1", server_port=8000):
         self.server_host = server_host
         self.server_port = server_port
-        self.http_base = f"http://{server_host}:{server_port}"
-        self.ws_url = f"ws://{server_host}:{server_port}/ws"
+        
+        raw = str(server_host).strip()
+        if raw.endswith('/'): raw = raw[:-1]
+        if raw.endswith('/ws'): raw = raw[:-3]
+        if raw.endswith('/api/v1'): raw = raw[:-7]
+
+        if raw.startswith("https://"):
+            self.http_base = raw
+            self.ws_url = "wss://" + raw[8:] + "/ws"
+        elif raw.startswith("http://"):
+            self.http_base = raw
+            self.ws_url = "ws://" + raw[7:] + "/ws"
+        elif "onrender.com" in raw or ".com" in raw or ".org" in raw or ".net" in raw or ".app" in raw:
+            self.http_base = f"https://{raw}"
+            self.ws_url = f"wss://{raw}/ws"
+        elif ":" in raw:
+            self.http_base = f"http://{raw}"
+            self.ws_url = f"ws://{raw}/ws"
+        else:
+            self.http_base = f"http://{raw}:{server_port}"
+            self.ws_url = f"ws://{raw}:{server_port}/ws"
         
         self.computer_name = socket.gethostname()
         self.ip_address = self._get_lan_ip()
