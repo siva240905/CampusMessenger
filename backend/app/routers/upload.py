@@ -3,11 +3,19 @@ import uuid
 import qrcode
 from io import BytesIO
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from fastapi.responses import FileResponse
 from app.config import settings
 from app.auth import get_current_user
 from app.models import User
 
 router = APIRouter(prefix="/upload", tags=["File Upload & QR Code"])
+
+@router.get("/files/{filename}")
+async def get_uploaded_file(filename: str):
+    file_path = os.path.join(settings.UPLOAD_DIR, filename)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail=f"File '{filename}' not found")
+    return FileResponse(file_path)
 
 @router.post("/file")
 async def upload_file(

@@ -63,9 +63,20 @@ const resolveUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   let base = import.meta.env.VITE_API_BASE_URL || '';
+  
+  if (!base && typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host.includes('onrender.com') || host.includes('vercel.app') || host.includes('netlify.app')) {
+      const backendHost = host.replace('-frontend.', '-backend.').replace('frontend', 'backend');
+      base = `${window.location.protocol}//${backendHost}`;
+    } else {
+      base = `${window.location.protocol}//${host}:8000`;
+    }
+  }
+
   if (base.endsWith('/')) base = base.slice(0, -1);
   if (base.endsWith('/api/v1')) base = base.slice(0, -7);
-  if (!base) base = `http://${window.location.hostname || '127.0.0.1'}:8000`;
+
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
   return `${base}${cleanPath}`;
 };

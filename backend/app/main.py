@@ -53,9 +53,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve uploaded static files over LAN (both root and api/v1 prefix)
+from fastapi.responses import FileResponse, JSONResponse
+
+# Serve uploaded static files over LAN & Cloud (both mount and explicit GET routes)
 app.mount("/static/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 app.mount("/api/v1/static/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="api_uploads")
+
+@app.get("/static/uploads/{filename}")
+@app.get("/api/v1/static/uploads/{filename}")
+@app.get("/uploads/{filename}")
+async def serve_static_file(filename: str):
+    file_path = os.path.join(settings.UPLOAD_DIR, filename)
+    if not os.path.isfile(file_path):
+        return JSONResponse(status_code=404, content={"detail": f"File '{filename}' not found on server"})
+    return FileResponse(file_path)
 
 # Include Routers
 app.include_router(auth.router, prefix=settings.API_PREFIX)
