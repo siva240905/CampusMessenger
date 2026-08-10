@@ -61,7 +61,7 @@ const playChime = (isEmergency = false) => {
 
 const resolveUrl = (path) => {
   if (!path) return '';
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  if (path.startsWith('data:') || path.startsWith('http://') || path.startsWith('https://')) return path;
   let base = import.meta.env.VITE_API_BASE_URL || '';
   
   if (!base && typeof window !== 'undefined') {
@@ -379,7 +379,7 @@ export default function StudentApp() {
                 {/* Media Preview (Photo or Video) */}
                 {msg.image && (() => {
                   const mediaUrl = resolveUrl(msg.image);
-                  const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(msg.image);
+                  const isVideo = msg.image.startsWith('data:video') || /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(msg.image);
 
                   return (
                     <div className="mb-4 rounded-xl overflow-hidden border border-slate-800 bg-slate-950/80">
@@ -439,7 +439,7 @@ export default function StudentApp() {
 
                   {msg.image && (() => {
                     const mediaUrl = resolveUrl(msg.image);
-                    const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(msg.image);
+                    const isVideo = msg.image.startsWith('data:video') || /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(msg.image);
                     return (
                       <a
                         href={mediaUrl}
@@ -501,7 +501,7 @@ export default function StudentApp() {
 
             {activeToast.image && (() => {
               const mediaUrl = resolveUrl(activeToast.image);
-              const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(activeToast.image);
+              const isVideo = activeToast.image.startsWith('data:video') || /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(activeToast.image);
 
               return (
                 <div className="mb-3 rounded-xl overflow-hidden border border-slate-700 bg-slate-950">

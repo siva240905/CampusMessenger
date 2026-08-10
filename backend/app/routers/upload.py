@@ -48,6 +48,8 @@ async def upload_file(
         "content_type": file.content_type
     }
 
+import base64
+
 @router.post("/image")
 async def upload_image(
     file: UploadFile = File(...),
@@ -55,6 +57,7 @@ async def upload_image(
 ):
     """
     Uploads a photo or video file for preview and transmission to student client systems.
+    Encodes media into Data URL format for sub-second zero-404 delivery across cloud environments.
     """
     if not file.filename:
         raise HTTPException(status_code=400, detail="No file provided")
@@ -82,13 +85,22 @@ async def upload_image(
         f.write(content)
 
     relative_url = f"/static/uploads/{unique_filename}"
+    
+    # Generate Data URL for resilient zero-404 transmission across cloud deployments
+    content_type = file.content_type or ("video/mp4" if is_video else "image/png")
+    b64_content = base64.b64encode(content).decode("utf-8")
+    data_url = f"data:{content_type};base64,{b64_content}"
+
+    # Use data_url for files <= 15MB to prevent 404 errors on ephemeral cloud disks
+    target_path = data_url if len(content) <= 15 * 1024 * 1024 else relative_url
 
     return {
         "file_name": file.filename,
-        "image_path": relative_url,
+        "image_path": target_path,
+        "relative_url": relative_url,
         "is_video": is_video,
         "file_size": len(content),
-        "content_type": file.content_type
+        "content_type": content_type
     }
 
 @router.get("/qrcode")

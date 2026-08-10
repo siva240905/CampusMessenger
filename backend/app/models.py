@@ -45,7 +45,7 @@ class Broadcast(Base):
     file_path = Column(String(500), nullable=True)
     file_name = Column(String(200), nullable=True)
     file_size = Column(Integer, nullable=True)
-    image_path = Column(String(500), nullable=True)
+    image_path = Column(Text, nullable=True)
     priority = Column(String(20), default="normal") # normal, high, emergency
     is_emergency = Column(Boolean, default=False)
     sender_name = Column(String(100), default="Faculty Office")

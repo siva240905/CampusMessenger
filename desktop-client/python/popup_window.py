@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import webbrowser
 import os
+import time
 import requests
 from io import BytesIO
 try:
@@ -79,10 +80,19 @@ class GlassPopupWindow:
         # Photo Image Preview (if image and PIL available)
         if media_path and not is_video and HAS_PIL:
             try:
-                full_img_url = f"{self.server_base_url}{media_path}"
-                resp = requests.get(full_img_url, timeout=3)
-                if resp.status_code == 200:
-                    img_data = Image.open(BytesIO(resp.content))
+                img_data = None
+                if media_path.startswith("data:"):
+                    import base64
+                    b64_str = media_path.split(",", 1)[1]
+                    raw_bytes = base64.b64decode(b64_str)
+                    img_data = Image.open(BytesIO(raw_bytes))
+                else:
+                    full_img_url = media_path if media_path.startswith("http") else f"{self.server_base_url}{media_path}"
+                    resp = requests.get(full_img_url, timeout=3)
+                    if resp.status_code == 200:
+                        img_data = Image.open(BytesIO(resp.content))
+
+                if img_data:
                     img_data.thumbnail((440, 120))
                     self.photo_ref = ImageTk.PhotoImage(img_data)
                     lbl_img_preview = tk.Label(body_frame, image=self.photo_ref, bg="#020617", bd=1, relief="solid")
@@ -143,27 +153,52 @@ class GlassPopupWindow:
     def open_media(self):
         media_path = self.data.get("image") or self.data.get("media")
         if media_path:
-            full_url = f"{self.server_base_url}{media_path}"
-            webbrowser.open(full_url)
+            if media_path.startswith("data:"):
+                import tempfile
+                import base64
+                b64_str = media_path.split(",", 1)[1]
+                ext = ".png"
+                if "video/mp4" in media_path: ext = ".mp4"
+                elif "image/jpeg" in media_path: ext = ".jpg"
+                temp_file = os.path.join(tempfile.gettempdir(), f"campuslink_media_{os.getpid()}{ext}")
+                with open(temp_file, "wb") as f:
+                    f.write(base64.b64decode(b64_str))
+                webbrowser.open(temp_file)
+            else:
+                full_url = media_path if media_path.startswith("http") else f"{self.server_base_url}{media_path}"
+                webbrowser.open(full_url)
 
     def download_media(self):
         media_path = self.data.get("image") or self.data.get("media")
         if not media_path:
             return
             
-        full_url = f"{self.server_base_url}{media_path}"
-        file_name = os.path.basename(media_path)
         save_dir = os.path.join(os.path.expanduser("~"), "Downloads")
-        save_path = os.path.join(save_dir, file_name)
         
         try:
-            r = requests.get(full_url, stream=True, timeout=10)
-            if r.status_code == 200:
-                with open(save_path, 'wb') as f:
-                    for chunk in r.iter_content(chunk_size=8192):
-                        f.write(chunk)
+            if media_path.startswith("data:"):
+                import base64
+                b64_str = media_path.split(",", 1)[1]
+                ext = ".png"
+                if "video/mp4" in media_path: ext = ".mp4"
+                elif "image/jpeg" in media_path: ext = ".jpg"
+                file_name = f"campuslink_media_{int(time.time())}{ext}"
+                save_path = os.path.join(save_dir, file_name)
+                with open(save_path, "wb") as f:
+                    f.write(base64.b64decode(b64_str))
                 webbrowser.open(save_dir)
-                self.status_lbl.config(text=f"✓ Media downloaded to Downloads folder!")
+                self.status_lbl.config(text="✓ Media downloaded to Downloads folder!")
+            else:
+                full_url = media_path if media_path.startswith("http") else f"{self.server_base_url}{media_path}"
+                file_name = os.path.basename(media_path)
+                save_path = os.path.join(save_dir, file_name)
+                r = requests.get(full_url, stream=True, timeout=10)
+                if r.status_code == 200:
+                    with open(save_path, 'wb') as f:
+                        for chunk in r.iter_content(chunk_size=8192):
+                            f.write(chunk)
+                    webbrowser.open(save_dir)
+                    self.status_lbl.config(text="✓ Media downloaded to Downloads folder!")
         except Exception as e:
             print(f"Media download failed: {e}")
             self.status_lbl.config(text=f"⚠️ Download error: {e}")
