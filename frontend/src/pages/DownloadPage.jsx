@@ -186,13 +186,13 @@ export default function DownloadPage() {
             </div>
 
             <a
-              href="https://github.com/siva240905/CampusMessenger/tree/main/desktop-client/python"
+              href="https://github.com/siva240905/CampusMessenger/archive/refs/heads/main.zip"
               target="_blank"
               rel="noreferrer"
               className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 rounded-xl shadow-lg transition flex items-center justify-center space-x-2"
             >
               <Download className="w-4 h-4" />
-              <span>Download Python Client</span>
+              <span>Download Python Client (.zip)</span>
             </a>
           </div>
         </div>
