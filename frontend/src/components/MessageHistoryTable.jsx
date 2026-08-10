@@ -114,12 +114,15 @@ const MessageHistoryTable = ({ messages, onDeleteMessage, openQRModal }) => {
                     </a>
                   )}
 
-                  {msg.image_path && (
-                    <a href={msg.image_path} target="_blank" rel="noreferrer" className="flex items-center space-x-1 text-purple-400 hover:underline font-mono">
-                      <ImageIcon className="w-3.5 h-3.5" />
-                      <span>View Image</span>
-                    </a>
-                  )}
+                  {msg.image_path && (() => {
+                    const isVid = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(msg.image_path);
+                    return (
+                      <a href={msg.image_path} target="_blank" rel="noreferrer" className="flex items-center space-x-1 text-purple-400 hover:underline font-mono">
+                        <ImageIcon className="w-3.5 h-3.5" />
+                        <span>{isVid ? 'View Video' : 'View Photo'}</span>
+                      </a>
+                    );
+                  })()}
                 </div>
 
                 <div className="text-[11px] text-slate-500 font-mono flex items-center space-x-3">

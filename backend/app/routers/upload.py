@@ -46,25 +46,41 @@ async def upload_image(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Uploads an image file for preview in notifications and client history.
+    Uploads a photo or video file for preview and transmission to student client systems.
     """
-    allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
-    if file.content_type not in allowed_types:
-        raise HTTPException(status_code=400, detail="Invalid image format. Allowed: JPG, PNG, GIF, WEBP")
-        
-    ext = os.path.splitext(file.filename)[1] or ".png"
-    unique_filename = f"img_{uuid.uuid4().hex}{ext}"
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="No file provided")
+
+    ext = os.path.splitext(file.filename)[1].lower()
+    allowed_exts = [
+        # Image / Photo formats
+        ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".bmp", ".tiff",
+        # Video formats
+        ".mp4", ".webm", ".ogg", ".mov", ".avi", ".mkv", ".m4v"
+    ]
+
+    is_video = ext in [".mp4", ".webm", ".ogg", ".mov", ".avi", ".mkv", ".m4v"] or (file.content_type and file.content_type.startswith("video/"))
+    is_image = ext in [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".bmp", ".tiff"] or (file.content_type and file.content_type.startswith("image/"))
+
+    if not (is_image or is_video) and ext not in allowed_exts:
+        raise HTTPException(status_code=400, detail="Invalid media format. Supported: Photos (JPG, PNG, GIF, WEBP, SVG) & Videos (MP4, WEBM, MOV, AVI, MKV)")
+
+    prefix = "vid_" if is_video else "img_"
+    unique_filename = f"{prefix}{uuid.uuid4().hex}{ext or ('.mp4' if is_video else '.png')}"
     file_path = os.path.join(settings.UPLOAD_DIR, unique_filename)
-    
+
     content = await file.read()
     with open(file_path, "wb") as f:
         f.write(content)
-        
+
     relative_url = f"/static/uploads/{unique_filename}"
-    
+
     return {
         "file_name": file.filename,
-        "image_path": relative_url
+        "image_path": relative_url,
+        "is_video": is_video,
+        "file_size": len(content),
+        "content_type": file.content_type
     }
 
 @router.get("/qrcode")

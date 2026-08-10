@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import GlassCard from './GlassCard';
-import { Monitor, Search, RefreshCw, Cpu, Activity } from 'lucide-react';
+import RemoteCommandModal from './RemoteCommandModal';
+import { Monitor, Search, RefreshCw, Cpu, Activity, Zap, Lock, Power, Globe } from 'lucide-react';
 
 const ConnectedClientsTable = ({ clients, onRefresh }) => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [targetClient, setTargetClient] = useState(null);
 
   const filteredClients = clients.filter((client) => {
     const matchesSearch =
@@ -18,93 +21,128 @@ const ConnectedClientsTable = ({ clients, onRefresh }) => {
     return matchesSearch && matchesStatus;
   });
 
+  const openRemoteConsole = (client = null) => {
+    setTargetClient(client);
+    setIsModalOpen(true);
+  };
+
   return (
-    <GlassCard className="space-y-4">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-slate-800">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-            <Monitor className="w-5 h-5" />
+    <>
+      <GlassCard className="space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-slate-800">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+              <Monitor className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white text-base">Connected Student Systems</h3>
+              <p className="text-xs text-slate-400">Live monitoring of all authorized desktop client sessions</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-bold text-white text-base">Connected Student Systems</h3>
-            <p className="text-xs text-slate-400">Live monitoring of all authorized desktop client sessions</p>
+
+          {/* Controls */}
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => openRemoteConsole(null)}
+              className="px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-bold text-xs flex items-center space-x-1.5 transition-all shadow-lg shadow-amber-500/10"
+            >
+              <Zap className="w-4 h-4" />
+              <span>Remote Command Console</span>
+            </button>
+
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search Host / IP / OS..."
+                className="pl-9 pr-4 py-1.5 text-xs rounded-xl glass-input w-48 sm:w-56"
+              />
+            </div>
+
+            <button
+              onClick={onRefresh}
+              className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition-all"
+              title="Refresh Client List"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        {/* Controls */}
-        <div className="flex items-center space-x-3">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search Host / IP / OS..."
-              className="pl-9 pr-4 py-1.5 text-xs rounded-xl glass-input w-48 sm:w-64"
-            />
-          </div>
-
-          <button
-            onClick={onRefresh}
-            className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition-all"
-            title="Refresh Client List"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
-            <tr>
-              <th className="p-3">Computer Name</th>
-              <th className="p-3">IP Address</th>
-              <th className="p-3">Operating System</th>
-              <th className="p-3">Client Version</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Last Active</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800/60">
-            {filteredClients.length === 0 ? (
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-900/60 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
               <tr>
-                <td colSpan={6} className="text-center py-8 text-slate-500 italic">
-                  No active student clients matching criteria.
-                </td>
+                <th className="p-3">Computer Name</th>
+                <th className="p-3">IP Address</th>
+                <th className="p-3">Operating System</th>
+                <th className="p-3">Client Version</th>
+                <th className="p-3">Status</th>
+                <th className="p-3">Last Active</th>
+                <th className="p-3 text-right">Remote Actions</th>
               </tr>
-            ) : (
-              filteredClients.map((client) => (
-                <tr key={client.client_id || client.id} className="hover:bg-slate-900/40 transition-colors">
-                  <td className="p-3 font-semibold text-white flex items-center space-x-2">
-                    <Cpu className="w-4 h-4 text-indigo-400" />
-                    <span>{client.computer_name || 'Student-PC'}</span>
-                  </td>
-                  <td className="p-3 font-mono text-indigo-300">{client.ip_address}</td>
-                  <td className="p-3 text-slate-300">{client.os_info || 'Windows 11'}</td>
-                  <td className="p-3 font-mono text-slate-400">{client.client_version || '1.0.0'}</td>
-                  <td className="p-3">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
-                      client.status === 'online'
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                        : 'bg-slate-800 text-slate-400 border border-slate-700'
-                    }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${client.status === 'online' ? 'bg-emerald-400 animate-ping' : 'bg-slate-500'}`} />
-                      {client.status || 'online'}
-                    </span>
-                  </td>
-                  <td className="p-3 text-slate-400 font-mono text-[11px]">
-                    {client.last_seen ? new Date(client.last_seen).toLocaleTimeString() : 'Just now'}
+            </thead>
+            <tbody className="divide-y divide-slate-800/60">
+              {filteredClients.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-8 text-slate-500 italic">
+                    No active student clients matching criteria.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </GlassCard>
+              ) : (
+                filteredClients.map((client) => (
+                  <tr key={client.client_id || client.id} className="hover:bg-slate-900/40 transition-colors">
+                    <td className="p-3 font-semibold text-white flex items-center space-x-2">
+                      <Cpu className="w-4 h-4 text-indigo-400" />
+                      <span>{client.computer_name || 'Student-PC'}</span>
+                    </td>
+                    <td className="p-3 font-mono text-indigo-300">{client.ip_address}</td>
+                    <td className="p-3 text-slate-300">{client.os_info || 'Windows 11'}</td>
+                    <td className="p-3 font-mono text-slate-400">{client.client_version || '1.0.0'}</td>
+                    <td className="p-3">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
+                        client.status === 'online'
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-slate-800 text-slate-400 border border-slate-700'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${client.status === 'online' ? 'bg-emerald-400 animate-ping' : 'bg-slate-500'}`} />
+                        {client.status || 'online'}
+                      </span>
+                    </td>
+                    <td className="p-3 text-slate-400 font-mono text-[11px]">
+                      {client.last_seen ? new Date(client.last_seen).toLocaleTimeString() : 'Just now'}
+                    </td>
+                    <td className="p-3 text-right">
+                      <div className="flex items-center justify-end space-x-1.5">
+                        <button
+                          onClick={() => openRemoteConsole(client)}
+                          className="px-2 py-1 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[11px] font-medium flex items-center space-x-1 transition-all"
+                          title="Send Remote Command to this PC"
+                        >
+                          <Zap className="w-3.5 h-3.5 text-indigo-400" />
+                          <span>Control</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </GlassCard>
+
+      <RemoteCommandModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        selectedClient={targetClient}
+      />
+    </>
   );
 };
 
 export default ConnectedClientsTable;
+

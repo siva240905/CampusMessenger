@@ -9,11 +9,13 @@ import QRCodeModal from '../components/QRCodeModal';
 
 import { useSocket } from '../context/SocketContext';
 import API from '../utils/api';
-import { Monitor, Send, FileText, Link as LinkIcon, Activity } from 'lucide-react';
+import RemoteCommandModal from '../components/RemoteCommandModal';
+import { Monitor, Send, FileText, Link as LinkIcon, Activity, Zap } from 'lucide-react';
 
 const Dashboard = () => {
   const [darkMode, setDarkMode] = useState(true);
   const { onlineCount, liveClients } = useSocket();
+  const [isRemoteModalOpen, setIsRemoteModalOpen] = useState(false);
 
   const [analytics, setAnalytics] = useState({
     total_clients: 0,
@@ -63,6 +65,15 @@ const Dashboard = () => {
             <div>
               <h1 className="text-2xl font-extrabold text-white tracking-tight">Faculty Broadcast Control Dashboard</h1>
               <p className="text-xs text-slate-400 mt-1">Real-time instant LAN communication center for campus placement drives & emergency notices</p>
+            </div>
+            <div>
+              <button
+                onClick={() => setIsRemoteModalOpen(true)}
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs flex items-center space-x-2 transition-all shadow-lg shadow-amber-500/20"
+              >
+                <Zap className="w-4 h-4" />
+                <span>⚡ Remote Command Console</span>
+              </button>
             </div>
           </div>
 
@@ -133,8 +144,15 @@ const Dashboard = () => {
 
       {/* QR Code Preview Modal */}
       {qrUrl && <QRCodeModal url={qrUrl} onClose={() => setQrUrl(null)} />}
+
+      {/* Remote Command Console Modal */}
+      <RemoteCommandModal
+        isOpen={isRemoteModalOpen}
+        onClose={() => setIsRemoteModalOpen(false)}
+      />
     </div>
   );
 };
 
 export default Dashboard;
+

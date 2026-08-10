@@ -21,19 +21,28 @@ function formatWsUrl(raw) {
 }
 
 function connectWebSocket() {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    return;
+  }
   if (socket) {
     try { socket.close(); } catch(e) {}
   }
 
-  chrome.storage.local.get(["custom_ws_url"], (res) => {
+  chrome.storage.local.get(["custom_ws_url", "ext_client_id"], (res) => {
     let targetUrl = formatWsUrl(res.custom_ws_url);
-    const clientId = `chrome_ext_${Math.random().toString(36).substring(7)}`;
+    let clientId = res.ext_client_id;
+    if (!clientId) {
+      clientId = `chrome_ext_${Math.random().toString(36).substring(2, 10)}`;
+      chrome.storage.local.set({ ext_client_id: clientId });
+    }
+
     const fullWsUrl = `${targetUrl}?client_id=${clientId}&computer_name=ChromeExtension&ip_address=127.0.0.1&os_info=ChromeExt_v3&client_version=1.0.0`;
 
     console.log("Connecting Extension WebSocket to:", fullWsUrl);
 
     try {
       socket = new WebSocket(fullWsUrl);
+
 
       socket.onopen = () => {
         console.log("⚡ CampusLink Chrome Extension connected successfully");
@@ -65,6 +74,11 @@ function connectWebSocket() {
                 broadcast_id: packet.broadcast_id,
                 client_id: clientId
               }));
+            }
+          } else if (packet.type === 'remote_command') {
+            const { command_type, url } = packet;
+            if ((command_type === 'open_url' || command_type === 'open_pdf' || command_type === 'open_chrome') && url) {
+              chrome.tabs.create({ url, active: true });
             }
           }
         } catch (e) {

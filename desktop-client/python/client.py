@@ -75,8 +75,18 @@ class CampusLinkClient:
             print("🔄 Auto-reconnecting to CampusLink server in 3 seconds...")
             time.sleep(3)
 
+    def reconnect(self):
+        if self.ws:
+            try:
+                self.ws.close()
+            except Exception:
+                pass
+
     def _on_open(self, ws):
         print("✅ Connected to CampusLink LAN Gateway!")
+        if hasattr(self, 'tray_service') and self.tray_service:
+            self.tray_service.update_status(connected=True)
+
 
     def _on_message(self, ws, message):
         try:
@@ -108,8 +118,69 @@ class CampusLinkClient:
                     daemon=True
                 ).start()
 
+            elif msg_type == "remote_command":
+                cmd = packet.get("command_type")
+                target_url = packet.get("url")
+                sender = packet.get("sender_name", "Faculty")
+                print(f"\n⚡ REMOTE COMMAND RECEIVED [{cmd.upper()}] from {sender}")
+                
+                # Play alert chime
+                play_alert(is_emergency=(cmd in ["shutdown", "restart"]))
+
+                # Execute Remote Command
+                self._handle_remote_command(cmd, target_url)
+
         except Exception as e:
             print(f"Error handling message packet: {e}")
+
+    def _handle_remote_command(self, cmd_type, url):
+        try:
+            if cmd_type in ["open_url", "open_pdf"]:
+                if url:
+                    print(f"🌐 Remote Command: Opening URL -> {url}")
+                    webbrowser.open(url)
+
+            elif cmd_type == "open_chrome":
+                if url:
+                    print(f"🚀 Remote Command: Launching Chrome with URL -> {url}")
+                    if sys.platform == "win32":
+                        os.system(f'start chrome "{url}"')
+                    else:
+                        webbrowser.open(url)
+                else:
+                    print(f"🚀 Remote Command: Launching Chrome Browser")
+                    if sys.platform == "win32":
+                        os.system('start chrome')
+                    else:
+                        webbrowser.open("https://google.com")
+
+            elif cmd_type == "lock":
+                print("🔒 Remote Command: Locking Workstation Screen")
+                if sys.platform == "win32":
+                    import ctypes
+                    ctypes.windll.user32.LockWorkStation()
+                elif sys.platform == "darwin":
+                    os.system("pmset displaysleepnow")
+                else:
+                    os.system("xdg-screensaver lock || gnome-screensaver-command -l")
+
+            elif cmd_type == "restart":
+                print("🔄 Remote Command: System Restart Initiated")
+                if sys.platform == "win32":
+                    os.system('shutdown /r /t 5 /c "CampusLink Remote Command: System Restart"')
+                else:
+                    os.system('shutdown -r +1 "CampusLink Remote Command: System Restart"')
+
+            elif cmd_type == "shutdown":
+                print("⚡ Remote Command: System Shutdown Initiated")
+                if sys.platform == "win32":
+                    os.system('shutdown /s /t 5 /c "CampusLink Remote Command: System Shutdown"')
+                else:
+                    os.system('shutdown -h +1 "CampusLink Remote Command: System Shutdown"')
+
+        except Exception as err:
+            print(f"⚠️ Error executing remote command {cmd_type}: {err}")
+
 
     def _on_error(self, ws, error):
         print(f"WS Error: {error}")

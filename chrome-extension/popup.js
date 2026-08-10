@@ -47,16 +47,27 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      feed.innerHTML = msgs.map((m) => `
+      feed.innerHTML = msgs.map((m) => {
+        let mediaBtn = '';
+        if (m.image) {
+          const isVid = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(m.image);
+          const rawUrl = urlInput.value.trim() || "http://127.0.0.1:8000";
+          const baseUrl = rawUrl.replace("wss://", "https://").replace("ws://", "http://").replace(/\/ws$/, "");
+          const fullMediaUrl = m.image.startsWith("http") ? m.image : `${baseUrl}${m.image}`;
+          mediaBtn = `<a href="${fullMediaUrl}" target="_blank" class="btn" style="background:#9333ea; color:#fff;">${isVid ? '🎬 Video' : '🖼️ Photo'}</a>`;
+        }
+        return `
         <div class="card ${m.is_emergency ? 'emergency' : ''}">
           <div class="card-title">${m.is_emergency ? '🚨 ' : '📢 '}${escapeHtml(m.title)}</div>
           <div class="card-msg">${escapeHtml(m.message)}</div>
           <div class="card-actions">
-            ${m.url ? `<a href="${m.url}" target="_blank" class="btn">🔗 Open Link</a>` : ''}
+            ${m.url ? `<a href="${m.url}" target="_blank" class="btn">🔗 Link</a>` : ''}
+            ${mediaBtn}
             <button class="btn btn-secondary copy-btn" data-text="${escapeHtml(m.url || m.message)}">📋 Copy</button>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
 
       document.querySelectorAll(".copy-btn").forEach((btn) => {
         btn.addEventListener("click", (e) => {

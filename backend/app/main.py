@@ -9,7 +9,8 @@ from app.config import settings
 from app.database import engine, Base, SessionLocal
 from app import models
 from app.websocket_manager import manager
-from app.routers import auth, broadcast, upload, clients, messages, analytics
+from app.routers import auth, broadcast, upload, clients, messages, analytics, commands
+
 
 # Create database tables & auto-seed initial users if missing
 Base.metadata.create_all(bind=engine)
@@ -62,6 +63,7 @@ app.include_router(upload.router, prefix=settings.API_PREFIX)
 app.include_router(clients.router, prefix=settings.API_PREFIX)
 app.include_router(messages.router, prefix=settings.API_PREFIX)
 app.include_router(analytics.router, prefix=settings.API_PREFIX)
+app.include_router(commands.router, prefix=settings.API_PREFIX)
 
 @app.get("/")
 def root():

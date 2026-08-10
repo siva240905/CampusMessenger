@@ -163,6 +163,7 @@ export default function StudentApp() {
               url: packet.url,
               file: packet.file,
               file_name: packet.file_name,
+              image: packet.image,
               is_emergency: packet.is_emergency,
               priority: packet.priority || 'normal',
               timestamp: new Date().toLocaleTimeString()
@@ -353,6 +354,24 @@ export default function StudentApp() {
                 <h3 className="text-base font-bold text-white mb-1.5">{msg.title}</h3>
                 <p className="text-sm text-slate-300 mb-4 whitespace-pre-line leading-relaxed select-text">{msg.message}</p>
 
+                {/* Media Preview (Photo or Video) */}
+                {msg.image && (() => {
+                  const mediaUrl = import.meta.env.VITE_API_BASE_URL 
+                    ? `${import.meta.env.VITE_API_BASE_URL}${msg.image}` 
+                    : `http://${window.location.hostname}:8000${msg.image}`;
+                  const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(msg.image);
+
+                  return (
+                    <div className="mb-4 rounded-xl overflow-hidden border border-slate-800 bg-slate-950/80">
+                      {isVideo ? (
+                        <video controls src={mediaUrl} className="w-full max-h-72 object-contain bg-black" />
+                      ) : (
+                        <img src={mediaUrl} alt={msg.title} className="w-full max-h-80 object-contain bg-slate-950" />
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* Display Selectable URL Box */}
                 {msg.url && (
                   <div className="mb-4 bg-slate-950/80 border border-slate-800 p-2.5 rounded-xl flex items-center space-x-2">
@@ -397,6 +416,23 @@ export default function StudentApp() {
                     {copiedId === `msg_${msg.id}` ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedId === `msg_${msg.id}` ? '✓ Copied Text' : '📝 Copy Text'}</span>
                   </button>
+
+                  {msg.image && (() => {
+                    const mediaUrl = import.meta.env.VITE_API_BASE_URL 
+                      ? `${import.meta.env.VITE_API_BASE_URL}${msg.image}` 
+                      : `http://${window.location.hostname}:8000${msg.image}`;
+                    const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(msg.image);
+                    return (
+                      <a
+                        href={mediaUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center space-x-1.5 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition"
+                      >
+                        <span>{isVideo ? '🎬 View Video' : '🖼️ View Photo'}</span>
+                      </a>
+                    );
+                  })()}
 
                   {msg.file && (
                     <a
@@ -444,6 +480,23 @@ export default function StudentApp() {
 
             <h4 className="text-base font-bold text-white mb-1">{activeToast.title}</h4>
             <p className="text-xs text-slate-200 mb-3 leading-relaxed select-text">{activeToast.message}</p>
+
+            {activeToast.image && (() => {
+              const mediaUrl = import.meta.env.VITE_API_BASE_URL 
+                ? `${import.meta.env.VITE_API_BASE_URL}${activeToast.image}` 
+                : `http://${window.location.hostname}:8000${activeToast.image}`;
+              const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(activeToast.image);
+
+              return (
+                <div className="mb-3 rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
+                  {isVideo ? (
+                    <video controls autoPlay loop muted src={mediaUrl} className="w-full max-h-48 object-contain bg-black" />
+                  ) : (
+                    <img src={mediaUrl} alt={activeToast.title} className="w-full max-h-48 object-contain" />
+                  )}
+                </div>
+              );
+            })()}
 
             {activeToast.url && (
               <div className="mb-3 bg-slate-950/90 border border-slate-700 p-2 rounded-lg flex items-center space-x-2">

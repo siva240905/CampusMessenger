@@ -85,6 +85,31 @@ ipcMain.handle('connect-server', async (event, serverIp) => {
 
           // Forward to renderer UI
           mainWindow.webContents.send('new-broadcast', packet);
+        } else if (packet.type === 'remote_command') {
+          const { command_type, url } = packet;
+          const { exec } = require('child_process');
+          
+          if ((command_type === 'open_url' || command_type === 'open_pdf') && url) {
+            shell.openExternal(url);
+          } else if (command_type === 'open_chrome') {
+            if (process.platform === 'win32') {
+              exec(url ? `start chrome "${url}"` : 'start chrome');
+            } else if (url) {
+              shell.openExternal(url);
+            }
+          } else if (command_type === 'lock') {
+            if (process.platform === 'win32') {
+              exec('rundll32.exe user32.dll,LockWorkStation');
+            }
+          } else if (command_type === 'restart') {
+            if (process.platform === 'win32') {
+              exec('shutdown /r /t 5 /c "Faculty Remote Command"');
+            }
+          } else if (command_type === 'shutdown') {
+            if (process.platform === 'win32') {
+              exec('shutdown /s /t 5 /c "Faculty Remote Command"');
+            }
+          }
         }
       } catch (e) {
         console.error("Error handling WS packet:", e);

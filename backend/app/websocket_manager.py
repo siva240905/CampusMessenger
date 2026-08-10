@@ -17,12 +17,21 @@ class ConnectionManager:
         self.dashboard_sockets: List[WebSocket] = []
 
     async def connect_client(self, websocket: WebSocket, client_id: str, meta: dict):
+        # Close old socket if client reconnected under same ID
+        if client_id in self.active_clients:
+            old_ws = self.active_clients[client_id]
+            try:
+                await old_ws.close()
+            except Exception:
+                pass
+
         await websocket.accept()
         self.active_clients[client_id] = websocket
         self.client_meta[client_id] = meta
         
         # Update Database client status to 'online'
         self._update_client_db_status(client_id, meta, "online")
+
         
         # Notify dashboard sockets about updated client list / online count
         await self.broadcast_to_dashboards({
@@ -85,6 +94,36 @@ class ConnectionManager:
         })
         
         return count
+
+    async def send_remote_command(self, packet: dict, target_client_ids: List[str] = None) -> int:
+        """
+        Sends remote command packet to targeted student desktop clients (or all if target_client_ids is empty/all).
+        """
+        message_str = json.dumps(packet)
+        tasks = []
+        
+        is_all = not target_client_ids or "all" in target_client_ids
+        
+        for client_id, ws in list(self.active_clients.items()):
+            if is_all or client_id in target_client_ids:
+                tasks.append(self._send_safe(ws, message_str, client_id))
+                
+        if not tasks:
+            return 0
+            
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        count = sum(1 for r in results if r is True)
+        
+        # Notify dashboards of command execution
+        await self.broadcast_to_dashboards({
+            "type": "remote_command_sent",
+            "command_type": packet.get("command_type"),
+            "delivered_count": count,
+            "total_clients": len(self.active_clients)
+        })
+        
+        return count
+
 
     async def _send_safe(self, ws: WebSocket, message_str: str, client_id: str) -> bool:
         try:

@@ -53,7 +53,7 @@ const BroadcastForm = ({ onBroadcastSent, openQRModal }) => {
       setImageDetails(res.data);
       setSelectedImage(file);
     } catch (err) {
-      setErrorMsg('Failed to upload image');
+      setErrorMsg(err.response?.data?.detail || 'Failed to upload photo/video');
     } finally {
       setUploading(false);
     }
@@ -222,12 +222,14 @@ const BroadcastForm = ({ onBroadcastSent, openQRModal }) => {
             )}
           </div>
 
-          {/* Image Attachment */}
+          {/* Image / Video Media Attachment */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">Attach Banner / Image</label>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">Attach Photo / Video / Banner</label>
             {imageDetails ? (
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900 border border-indigo-500/30 text-xs text-indigo-300">
-                <span className="truncate max-w-[200px]">{imageDetails.file_name}</span>
+                <span className="truncate max-w-[200px] flex items-center gap-1.5">
+                  {imageDetails.is_video ? '🎬' : '🖼️'} {imageDetails.file_name}
+                </span>
                 <button type="button" onClick={() => { setImageDetails(null); setSelectedImage(null); }} className="text-slate-400 hover:text-rose-400">
                   <X className="w-4 h-4" />
                 </button>
@@ -235,8 +237,13 @@ const BroadcastForm = ({ onBroadcastSent, openQRModal }) => {
             ) : (
               <label className="flex items-center justify-center space-x-2 p-2.5 rounded-xl glass-input cursor-pointer hover:border-indigo-500 transition-all text-xs text-slate-400">
                 <ImageIcon className="w-4 h-4 text-indigo-400" />
-                <span>{uploading ? 'Uploading...' : 'Choose Image'}</span>
-                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                <span>{uploading ? 'Uploading...' : 'Choose Photo / Video'}</span>
+                <input 
+                  type="file" 
+                  accept="image/*,video/*,.mp4,.webm,.ogg,.mov,.avi,.mkv" 
+                  onChange={handleImageUpload} 
+                  className="hidden" 
+                />
               </label>
             )}
           </div>

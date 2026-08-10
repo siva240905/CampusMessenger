@@ -111,3 +111,18 @@ class AnalyticsResponse(BaseModel):
     links_shared: int
     today_broadcasts: int
     recent_activity: List[dict]
+
+# Remote Command Schemas
+class RemoteCommandCreate(BaseModel):
+    command_type: str = Field(..., description="open_url, open_pdf, open_chrome, lock, restart, shutdown")
+    url: Optional[str] = None
+    target_client_ids: Optional[List[str]] = Field(default_factory=list, description="Empty or ['all'] means broadcast to all connected student PCs")
+    reason: Optional[str] = None
+
+class RemoteCommandResponse(BaseModel):
+    status: str
+    command_type: str
+    delivered_count: int
+    total_clients: int
+    timestamp: datetime
+
