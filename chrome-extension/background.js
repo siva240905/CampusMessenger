@@ -1,9 +1,17 @@
 // CampusLink Chrome Extension Background Service Worker
 let socket = null;
-let defaultServerUrl = "wss://campuslink-backend.onrender.com/ws";
+let reconnectTimer = null;
+let fallbackIndex = 0;
+
+const fallbackUrls = [
+  "wss://campusmessenger-backend.onrender.com/ws",
+  "wss://campuslink-backend.onrender.com/ws",
+  "ws://127.0.0.1:8000/ws",
+  "ws://localhost:8000/ws"
+];
 
 function formatWsUrl(raw) {
-  if (!raw) return defaultServerUrl;
+  if (!raw) return null;
   let cleaned = raw.trim();
   if (cleaned.endsWith('/')) cleaned = cleaned.slice(0, -1);
   if (cleaned.endsWith('/ws')) cleaned = cleaned.slice(0, -3);
@@ -21,7 +29,7 @@ function formatWsUrl(raw) {
 }
 
 function connectWebSocket() {
-  if (socket && socket.readyState === WebSocket.OPEN) {
+  if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
     return;
   }
   if (socket) {
@@ -30,6 +38,10 @@ function connectWebSocket() {
 
   chrome.storage.local.get(["custom_ws_url", "ext_client_id"], (res) => {
     let targetUrl = formatWsUrl(res.custom_ws_url);
+    if (!targetUrl) {
+      targetUrl = fallbackUrls[fallbackIndex % fallbackUrls.length];
+    }
+
     let clientId = res.ext_client_id;
     if (!clientId) {
       clientId = `chrome_ext_${Math.random().toString(36).substring(2, 10)}`;
@@ -43,10 +55,10 @@ function connectWebSocket() {
     try {
       socket = new WebSocket(fullWsUrl);
 
-
       socket.onopen = () => {
-        console.log("⚡ CampusLink Chrome Extension connected successfully");
-        chrome.storage.local.set({ is_connected: true });
+        console.log("⚡ CampusLink Chrome Extension connected successfully to:", fullWsUrl);
+        chrome.storage.local.set({ is_connected: true, active_ws_url: targetUrl });
+        if (reconnectTimer) clearTimeout(reconnectTimer);
       };
 
       socket.onmessage = (event) => {
@@ -88,22 +100,40 @@ function connectWebSocket() {
 
       socket.onclose = () => {
         chrome.storage.local.set({ is_connected: false });
+        scheduleReconnect();
       };
 
       socket.onerror = (err) => {
         chrome.storage.local.set({ is_connected: false });
-        if (socket) socket.close();
+        if (socket) {
+          try { socket.close(); } catch(e) {}
+        }
+        scheduleReconnect();
       };
     } catch (err) {
       console.error("WebSocket init error:", err);
       chrome.storage.local.set({ is_connected: false });
+      scheduleReconnect();
     }
   });
+}
+
+function scheduleReconnect() {
+  if (reconnectTimer) clearTimeout(reconnectTimer);
+  reconnectTimer = setTimeout(() => {
+    chrome.storage.local.get(["custom_ws_url"], (res) => {
+      if (!res.custom_ws_url) {
+        fallbackIndex++;
+      }
+      connectWebSocket();
+    });
+  }, 3000);
 }
 
 // Reconnect message listener from popup
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === "reconnect") {
+    fallbackIndex = 0;
     connectWebSocket();
     sendResponse({ status: "reconnecting" });
   }

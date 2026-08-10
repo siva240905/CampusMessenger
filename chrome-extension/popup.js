@@ -7,8 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const saveUrlBtn = document.getElementById("saveUrlBtn");
 
   // Load current URL into settings input
-  chrome.storage.local.get(["custom_ws_url"], (data) => {
-    urlInput.value = data.custom_ws_url || "https://campuslink-backend.onrender.com";
+  chrome.storage.local.get(["custom_ws_url", "active_ws_url"], (data) => {
+    urlInput.value = data.custom_ws_url || data.active_ws_url || "https://campusmessenger-backend.onrender.com";
   });
 
   toggleSettings.addEventListener("click", () => {
