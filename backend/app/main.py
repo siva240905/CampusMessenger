@@ -87,6 +87,7 @@ def root():
     }
 
 @app.websocket("/ws")
+@app.websocket("/api/v1/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
     client_id: str = Query(None),

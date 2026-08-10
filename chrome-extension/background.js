@@ -5,6 +5,7 @@ let fallbackIndex = 0;
 
 const fallbackUrls = [
   "wss://campusmessenger-backend.onrender.com/ws",
+  "wss://campusmessenger-backend.onrender.com/api/v1/ws",
   "wss://campuslink-backend.onrender.com/ws",
   "ws://127.0.0.1:8000/ws",
   "ws://localhost:8000/ws"
@@ -14,8 +15,8 @@ function formatWsUrl(raw) {
   if (!raw) return null;
   let cleaned = raw.trim();
   if (cleaned.endsWith('/')) cleaned = cleaned.slice(0, -1);
-  if (cleaned.endsWith('/ws')) cleaned = cleaned.slice(0, -3);
   if (cleaned.endsWith('/api/v1')) cleaned = cleaned.slice(0, -7);
+  if (cleaned.endsWith('/ws')) cleaned = cleaned.slice(0, -3);
 
   if (cleaned.startsWith('https://')) {
     cleaned = 'wss://' + cleaned.substring(8);
