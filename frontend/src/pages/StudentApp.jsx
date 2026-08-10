@@ -59,6 +59,17 @@ const playChime = (isEmergency = false) => {
   }
 };
 
+const resolveUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  let base = import.meta.env.VITE_API_BASE_URL || '';
+  if (base.endsWith('/')) base = base.slice(0, -1);
+  if (base.endsWith('/api/v1')) base = base.slice(0, -7);
+  if (!base) base = `http://${window.location.hostname || '127.0.0.1'}:8000`;
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${cleanPath}`;
+};
+
 export default function StudentApp() {
   const [messages, setMessages] = useState(() => {
     const saved = localStorage.getItem('campuslink_student_messages');
@@ -356,9 +367,7 @@ export default function StudentApp() {
 
                 {/* Media Preview (Photo or Video) */}
                 {msg.image && (() => {
-                  const mediaUrl = import.meta.env.VITE_API_BASE_URL 
-                    ? `${import.meta.env.VITE_API_BASE_URL}${msg.image}` 
-                    : `http://${window.location.hostname}:8000${msg.image}`;
+                  const mediaUrl = resolveUrl(msg.image);
                   const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(msg.image);
 
                   return (
@@ -418,9 +427,7 @@ export default function StudentApp() {
                   </button>
 
                   {msg.image && (() => {
-                    const mediaUrl = import.meta.env.VITE_API_BASE_URL 
-                      ? `${import.meta.env.VITE_API_BASE_URL}${msg.image}` 
-                      : `http://${window.location.hostname}:8000${msg.image}`;
+                    const mediaUrl = resolveUrl(msg.image);
                     const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(msg.image);
                     return (
                       <a
@@ -436,7 +443,7 @@ export default function StudentApp() {
 
                   {msg.file && (
                     <a
-                      href={import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}${msg.file}` : `http://${window.location.hostname}:8000${msg.file}`}
+                      href={resolveUrl(msg.file)}
                       download={msg.file_name || 'download'}
                       className="inline-flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition"
                     >
@@ -482,9 +489,7 @@ export default function StudentApp() {
             <p className="text-xs text-slate-200 mb-3 leading-relaxed select-text">{activeToast.message}</p>
 
             {activeToast.image && (() => {
-              const mediaUrl = import.meta.env.VITE_API_BASE_URL 
-                ? `${import.meta.env.VITE_API_BASE_URL}${activeToast.image}` 
-                : `http://${window.location.hostname}:8000${activeToast.image}`;
+              const mediaUrl = resolveUrl(activeToast.image);
               const isVideo = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(activeToast.image);
 
               return (

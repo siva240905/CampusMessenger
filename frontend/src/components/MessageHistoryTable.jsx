@@ -108,7 +108,7 @@ const MessageHistoryTable = ({ messages, onDeleteMessage, openQRModal }) => {
                   )}
 
                   {msg.file_path && (
-                    <a href={msg.file_path} download className="flex items-center space-x-1 text-emerald-400 hover:underline font-mono">
+                    <a href={msg.file_path.startsWith('http') ? msg.file_path : (import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/api\/v1$/, '')}${msg.file_path}` : msg.file_path)} download className="flex items-center space-x-1 text-emerald-400 hover:underline font-mono">
                       <Download className="w-3.5 h-3.5" />
                       <span>{msg.file_name || 'Download File'}</span>
                     </a>
@@ -116,8 +116,9 @@ const MessageHistoryTable = ({ messages, onDeleteMessage, openQRModal }) => {
 
                   {msg.image_path && (() => {
                     const isVid = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)($|\?)/i.test(msg.image_path);
+                    const fullMediaUrl = msg.image_path.startsWith('http') ? msg.image_path : (import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL.replace(/\/api\/v1$/, '')}${msg.image_path}` : msg.image_path);
                     return (
-                      <a href={msg.image_path} target="_blank" rel="noreferrer" className="flex items-center space-x-1 text-purple-400 hover:underline font-mono">
+                      <a href={fullMediaUrl} target="_blank" rel="noreferrer" className="flex items-center space-x-1 text-purple-400 hover:underline font-mono">
                         <ImageIcon className="w-3.5 h-3.5" />
                         <span>{isVid ? 'View Video' : 'View Photo'}</span>
                       </a>

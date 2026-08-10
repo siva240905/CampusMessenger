@@ -53,8 +53,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve uploaded static files over LAN
+# Serve uploaded static files over LAN (both root and api/v1 prefix)
 app.mount("/static/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
+app.mount("/api/v1/static/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="api_uploads")
 
 # Include Routers
 app.include_router(auth.router, prefix=settings.API_PREFIX)
