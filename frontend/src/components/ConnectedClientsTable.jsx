@@ -42,14 +42,6 @@ const ConnectedClientsTable = ({ clients, onRefresh }) => {
 
           {/* Controls */}
           <div className="flex items-center space-x-3">
-            <button
-              onClick={() => openRemoteConsole(null)}
-              className="px-3.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-bold text-xs flex items-center space-x-1.5 transition-all shadow-lg shadow-amber-500/10"
-            >
-              <Zap className="w-4 h-4" />
-              <span>Remote Command Console</span>
-            </button>
-
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
               <input

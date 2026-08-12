@@ -66,15 +66,6 @@ const Dashboard = () => {
               <h1 className="text-2xl font-extrabold text-white tracking-tight">Faculty Broadcast Control Dashboard</h1>
               <p className="text-xs text-slate-400 mt-1">Real-time instant LAN communication center for campus placement drives & emergency notices</p>
             </div>
-            <div>
-              <button
-                onClick={() => setIsRemoteModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs flex items-center space-x-2 transition-all shadow-lg shadow-amber-500/20"
-              >
-                <Zap className="w-4 h-4" />
-                <span>⚡ Remote Command Console</span>
-              </button>
-            </div>
           </div>
 
           {/* Stat Cards Grid */}
