@@ -295,13 +295,13 @@ export default function StudentApp() {
             </button>
           )}
 
-          {/* 🧩 Chrome Extension & Download Page Button */}
+          {/* 💻 Install Desktop App (PWA) Page Button */}
           <a
             href="/download"
             className="flex items-center space-x-1.5 text-xs bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-lg transition font-medium"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Get Extension / Apps</span>
+            <Laptop className="w-3.5 h-3.5" />
+            <span>Install PWA App</span>
           </a>
 
           {/* 📥 Install Chrome Desktop App Button */}
