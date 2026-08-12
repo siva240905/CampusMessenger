@@ -18,20 +18,25 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function AppRoutes() {
+  // Detect if deployed for Student (e.g. Vercel, VITE_APP_MODE === 'student', or hostname contains 'vercel' or 'student')
+  const isStudentMode = 
+    import.meta.env.VITE_APP_MODE === 'student' || 
+    (typeof window !== 'undefined' && (
+      window.location.hostname.includes('vercel.app') || 
+      window.location.hostname.includes('student')
+    ));
+
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
+      {/* Student Portal Routes */}
       <Route path="/student" element={<StudentApp />} />
       <Route path="/download" element={<DownloadPage />} />
       <Route path="/install" element={<DownloadPage />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
+
+      {/* Faculty Admin Routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/faculty" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route
         path="/messages"
         element={
@@ -56,6 +61,21 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Root Route: Student Portal on Vercel, Faculty Admin Dashboard on Render */}
+      <Route
+        path="/"
+        element={
+          isStudentMode ? (
+            <StudentApp />
+          ) : (
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          )
+        }
+      />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
